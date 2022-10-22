@@ -1,0 +1,12 @@
+grpcio
+numpy
+Pillow
+tensorflow
+torch
+opencv-python
+pandas
+torchvision
+pyyaml
+tqdm
+matplotlib
+seaborn
