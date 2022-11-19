@@ -1,5 +1,6 @@
 import logging
 import time
+import os
 
 from lego_sorter_server.generated import LegoSorter_pb2_grpc
 from lego_sorter_server.generated.LegoSorter_pb2 import SorterConfiguration, ListOfBoundingBoxesWithIndexes, \
@@ -16,6 +17,9 @@ class LegoSorterService(LegoSorter_pb2_grpc.LegoSorterServicer):
         self.sortingProcessor = SortingProcessor(brickCategoryConfig)
 
     def processNextImage(self, request: ImageRequest, context) -> ListOfBoundingBoxesWithIndexes:
+        if os.getenv('MACRO_PROFILE_EN') == '1':
+            print(f'[PROFILE][T={time.time()}] processNextImage entry')
+
         start_time = time.time()
         logging.info("[LegoSorterService] Got an image request. Processing...")
         image = ImageProtoUtils.prepare_image(request)
@@ -25,6 +29,9 @@ class LegoSorterService(LegoSorter_pb2_grpc.LegoSorterServicer):
         elapsed_milliseconds = int(1000 * (time.time() - start_time))
         logging.info(f"[LegoSorterService] Processing the request took {elapsed_milliseconds} milliseconds.")
 
+        if os.getenv('MACRO_PROFILE_EN') == '1':
+            print(f'[PROFILE][T={time.time()}] processNextImage exit')
+        
         return response
 
     def startMachine(self, request: Empty, context):

@@ -1,3 +1,5 @@
+import os
+import time
 import logging
 from typing import Tuple, List
 
@@ -24,6 +26,9 @@ class AnalysisService:
 
     def detect(self, image: Image, resize: bool = True, threshold=0.5,
                discard_border_results: bool = True) -> DetectionResults:
+        if os.getenv('MACRO_PROFILE_EN') == '1':
+            print(f'[PROFILE][T={time.time()}] detect entry')
+
         if image.size is not AnalysisService.DEFAULT_IMAGE_DETECTION_SIZE and resize is False:
             logging.warning(f"[AnalysisService] Requested detection on an image with a non-standard size {image.size} "
                             f"but 'resize' parameter is {resize}.")
@@ -43,13 +48,25 @@ class AnalysisService:
         detection_results = self.detector.detect_lego(numpy.array(image))
         detection_results = self.filter_detection_results(detection_results, threshold, accepted_xy_range)
 
-        return self.translate_bounding_boxes_to_original_size(detection_results,
-                                                              scale,
-                                                              original_size,
-                                                              self.DEFAULT_IMAGE_DETECTION_SIZE[0])
+        retval = self.translate_bounding_boxes_to_original_size(detection_results,
+                                                                scale,
+                                                                original_size,
+                                                                self.DEFAULT_IMAGE_DETECTION_SIZE[0])
+        if os.getenv('MACRO_PROFILE_EN') == '1':
+            print(f'[PROFILE][T={time.time()}] detect exit')
+
+        return retval
 
     def classify(self, images: List[Image]) -> ClassificationResults:
-        return self.classifier.predict(images)
+        if os.getenv('MACRO_PROFILE_EN') == '1':
+            print(f'[PROFILE][T={time.time()}] classify entry')
+
+        retval = self.classifier.predict(images)
+
+        if os.getenv('MACRO_PROFILE_EN') == '1':
+            print(f'[PROFILE][T={time.time()}] classify exit')
+
+        return retval
 
     def detect_and_classify(self, image: Image, detection_threshold: float = 0.5, discard_border_results: bool = True) \
             -> Tuple[DetectionResults, ClassificationResults]:
