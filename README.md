@@ -43,3 +43,26 @@ To test **Lego Sorter Server**, use the [Lego Sorter App](https://github.com/Leg
 **Lego Sorter Server** uses [gRPC](https://grpc.io/) to handle requests, the list of available methods is defined in `LegoSorterServer/lego_sorter_server/proto/LegoBrick.proto`.\
 To call a method with your own client, look at [gRPC documentation](https://grpc.io/docs/languages/python/basics/#calling-service-methods)
 
+## Using Docker
+
+Building the container:
+
+```
+docker build -t lego_sorter_server .
+```
+
+Running the container:
+```
+docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 -v $PWD:/LegoSorterServer_host --rm lego_sorter_server python lego_sorter_server/
+```
+
+Running the container in interactive mode for debug/development, with local directory mounted as `/LegoSorterServer_host`:
+```
+docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 --rm -it lego_sorter_server
+```
+*TODO: Come up with a nicer way to do this.* 
+
+Running the TensorRT optimization:
+```
+docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 -v $PWD:/LegoSorterServer_host --rm lego_sorter_server python lego_sorter_server/
+```

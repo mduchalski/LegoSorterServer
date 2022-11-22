@@ -10,3 +10,5 @@ pyyaml
 tqdm
 matplotlib
 seaborn
+gitdb
+gitpython
