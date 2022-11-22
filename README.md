@@ -64,5 +64,5 @@ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 
 
 Running the TensorRT optimization:
 ```
-docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 -v $PWD:/LegoSorterServer_host --rm lego_sorter_server python lego_sorter_server/
+docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 -v $PWD:/LegoSorterServer_host --rm -e LEGO_USE_TRT=1  lego_sorter_server python lego_sorter_server/
 ```
