@@ -1,13 +1,16 @@
 {
-	"opony": {
-		"position": 300,
-		"bricks": ["2410", "3010"]
+	"bricks": {
+		"opony": {
+			"position": 300,
+			"bricks": ["2410", "3010"]
+		},
+		"plaskie_strukturalne": {
+			"position": 400,
+			"bricks": ["3810", "2012"]
+		},
+		"default": {
+			"position": 0
+		}
 	},
-	"plaskie_strukturalne": {
-		"position": 400,
-		"bricks": ["3810", "2012"]
-	},
-	"default": {
-		"position": 0
-	}
+	"best_result_method": "min_inv_score"
 }

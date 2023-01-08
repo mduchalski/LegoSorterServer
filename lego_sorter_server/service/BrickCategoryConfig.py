@@ -22,9 +22,12 @@ class BrickCategoryConfig:
     def __init__(self, config_path=None):
         if not config_path:
             self.brick_cat_mapping, self.cat_positions = {}, {}
+            self.best_result_method = 'first'
         else:
             with open(config_path, "r") as src:
-                self.brick_cat_mapping, self.cat_positions = BrickCategoryConfig.conf_from_json(json.load(src))
+                cfg_json = json.load(src)
+                self.brick_cat_mapping, self.cat_positions = BrickCategoryConfig.conf_from_json(cfg_json['bricks'])
+                self.best_result_method = cfg_json['best_result_method']
 
     def __getitem__(self, brick):
         if brick not in self.brick_cat_mapping:

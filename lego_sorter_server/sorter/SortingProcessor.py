@@ -19,6 +19,15 @@ class SortingProcessor:
         self.ordering: SimpleOrdering = SimpleOrdering()
         self.storage: LegoImageStorage = LegoImageStorage()
 
+        if brickCategoryConfig.best_result_method == 'first':
+            self.get_best_result = self.get_best_result_first
+        elif brickCategoryConfig.best_result_method == 'max_score':
+            self.get_best_result = self.get_best_result_max_score
+        elif brickCategoryConfig.best_result_method == 'mode':
+            self.get_best_result = self.get_best_result_mode
+        elif brickCategoryConfig.best_result_method == 'min_inv_score':
+            self.get_best_result = self.get_best_result_min_inv_score
+
     def process_next_image(self, image: Image, save_image: bool = True):
         start_time = time.time()
         current_results = self._process(image)
@@ -93,6 +102,33 @@ class SortingProcessor:
         return sorted(zipped_results, key=lambda res: res[0][0], reverse=True)
 
     @staticmethod
-    def get_best_result(results):
-        # TODO - max score, average score, max count?
+    def get_best_result_first(results):
         return results[0]
+
+    @staticmethod
+    def get_best_result_max_score(results):
+        return max(results, key=lambda res: res[2])
+
+    @staticmethod
+    def get_best_result_mode(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label in label_scores:
+                label_scores[label] += 1
+            else:
+                label_scores[label] = 1
+
+        best_label = max(label_scores, key=lambda l: label_scores[l])
+        return next(result for result in results if result[1] == best_label)
+
+    @staticmethod
+    def get_best_result_min_inv_score(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label in label_scores:
+                label_scores[label] *= (1-score)
+            else:
+                label_scores[label] = (1-score)
+
+        best_label = min(label_scores, key=lambda l: label_scores[l])
+        return next(result for result in results if result[1] == best_label)
