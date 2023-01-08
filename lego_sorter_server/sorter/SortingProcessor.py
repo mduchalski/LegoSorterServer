@@ -39,8 +39,9 @@ class SortingProcessor:
             logging.info(f"[SortingProcessor] Saving images took {1000 * (time.time() - start_time_saving)} ms.")
 
         while self.ordering.get_count_of_results_to_send() > 0:
-            # Clear out the queue of processed bricks
-            self._send_results_to_controller()
+            best_result = self._send_results_to_controller()
+            if best_result != None:
+                    return {-1: best_result}
 
         return self.ordering.get_current_state()
 
@@ -48,11 +49,12 @@ class SortingProcessor:
         processed_brick = self.ordering.pop_first_processed_brick()
 
         if len(processed_brick) == 0:
-            return False
+            return None
 
         best_result = self.get_best_result(processed_brick)
         logging.info(f"[SortingProcessor] Got the best result {best_result}. Returning the results...")
         self.sorter_controller.on_brick_recognized(best_result)
+        return best_result
 
     def _process(self, image: Image) -> List[Tuple]:
         """
