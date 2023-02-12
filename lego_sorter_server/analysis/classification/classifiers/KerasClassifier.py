@@ -2,26 +2,24 @@ import logging
 import os
 import time
 
-import tensorflow as tf
 import numpy as np
 
 from typing import List
 
-from tensorflow import keras
 from PIL.Image import Image
 
 from lego_sorter_server.analysis.classification.ClassificationResults import ClassificationResults
 from lego_sorter_server.analysis.classification.classifiers.LegoClassifier import LegoClassifier
 from lego_sorter_server.analysis.classification.toolkit.transformations.simple import Simple
 
-gpus = tf.config.list_physical_devices('GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-
+if os.getenv('LEGO_CLASSIFICATION_BACKEND') == 'tensorrt':   
+    from lego_sorter_server.analysis.classification.models.TrtClassificationModel import ClassificationModel
+else:
+    from lego_sorter_server.analysis.classification.models.TfClassificationModel import ClassificationModel
 
 class KerasClassifier(LegoClassifier):
     def __init__(self, model_path=os.path.join("lego_sorter_server", "analysis", "classification", "models",
-                                               "keras_model", "447_classes.h5")):
+                                               "keras_model", "447_classes")):
         super().__init__()
         self.model_path = model_path
         self.model = None
@@ -29,7 +27,7 @@ class KerasClassifier(LegoClassifier):
         self.size = (224, 224)
 
     def load_model(self):
-        self.model = keras.models.load_model(self.model_path)
+        self.model = ClassificationModel(self.model_path)
         self.initialized = True
 
     def predict(self, images: List[Image]) -> ClassificationResults:

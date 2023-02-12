@@ -14,3 +14,5 @@ gitdb
 gitpython
 pycuda
 cvu-python
+tf2onnx
+onnx

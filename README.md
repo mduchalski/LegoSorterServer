@@ -43,26 +43,47 @@ To test **Lego Sorter Server**, use the [Lego Sorter App](https://github.com/Leg
 **Lego Sorter Server** uses [gRPC](https://grpc.io/) to handle requests, the list of available methods is defined in `LegoSorterServer/lego_sorter_server/proto/LegoBrick.proto`.\
 To call a method with your own client, look at [gRPC documentation](https://grpc.io/docs/languages/python/basics/#calling-service-methods)
 
-## Using Docker
+## Docker and TensorRT support
 
-Building the container:
+There is a Docker container available for running the server on Nvidia GPUs. In addition to "standard" PyTorch and TensorFlow CUDA inference runtime, TensorRT use is also supported for both classification and detection NNs. This significantly speeds up the execution by leveraging optimizations specific to HW architecture for a particular Nvidia GPU/compute capability.
 
+### Configuration
+
+The following environement variables are exposed for configuration:
+- `LEGO_DETECTION_BACKEND` - specifies detection inference engine
+  - `tensorrt` - use TensorRT
+  - default - use PyTorch CUDA runtime
+- `LEGO_CLASSIFICATION_BACKEND` - specifies classification inference engine
+  - `tensorrt` - use TensorRT
+  - default - use TensorFlow CUDA runtime.
+
+Note that when `tensorrt` backend is enabled for any task, then on server start TensorRT engines will be built. This can take a few minutes. To make those engines persistent, mount `/LegoSorterServer` in a named volume. Such volume should generally not be migrated across different machines/HW configurations, to get the most performence on a given system.
+
+### Command reference
+
+Start the container with TensorRT disabled:
+```
+docker run --gpus all -p 50051:50051 --rm \
+	--ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
+	lego_sorter_server python lego_sorter_server/
+```
+
+Start the container with TensorRT enabled and a named volume mounted:
+```
+docker run --gpus all -p 50051:50051 --rm \
+	--ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
+	-e LEGO_CLASSIFICATION_BACKEND=tensorrt \
+	-e LEGO_DETECTION_BACKEND=tensorrt \
+	-v lego:/LegoSorterServer \
+	lego_sorter_server python lego_sorter_server/
+```
+
+Remove an existing volume:
+```
+docker volume rm lego
+```
+
+Rebuilding the container:
 ```
 docker build -t lego_sorter_server .
-```
-
-Running the container:
-```
-docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 -v $PWD:/LegoSorterServer_host --rm lego_sorter_server python lego_sorter_server/
-```
-
-Running the container in interactive mode for debug/development, with local directory mounted as `/LegoSorterServer_host`:
-```
-docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 --rm -it lego_sorter_server
-```
-*TODO: Come up with a nicer way to do this.* 
-
-Running the TensorRT optimization:
-```
-docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 50051:50051 -v $PWD:/LegoSorterServer_host --rm lego_sorter_server python lego_sorter_server/
 ```
