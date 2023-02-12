@@ -8,7 +8,10 @@ from pathlib import Path
 from lego_sorter_server.analysis.detection.DetectionResults import DetectionResults
 from lego_sorter_server.analysis.detection.detectors.LegoDetector import LegoDetector
 
-from lego_sorter_server.analysis.detection.models.TorchDetectionModel import DetectionModel
+if os.getenv('LEGO_DETECTION_BACKEND') == 'tensorrt':
+    from lego_sorter_server.analysis.detection.models.TrtDetectionModel import DetectionModel
+else:
+    from lego_sorter_server.analysis.detection.models.TorchDetectionModel import DetectionModel
 
 class ThreadSafeSingleton(type):
     _instances = {}
@@ -24,7 +27,7 @@ class ThreadSafeSingleton(type):
 
 class YoloLegoDetector(LegoDetector, metaclass=ThreadSafeSingleton):
     def __init__(self, model_path=os.path.join("lego_sorter_server", "analysis", "detection", "models", "yolo_model",
-                                               "yolov5_medium_extended.pt")):
+                                               "yolov5_medium_extended")):
         self.__initialized = False
         self.model_path = Path(model_path).absolute()
 
@@ -32,32 +35,12 @@ class YoloLegoDetector(LegoDetector, metaclass=ThreadSafeSingleton):
         if self.__initialized:
             raise Exception("YoloLegoDetector already initialized")
 
-        if not self.model_path.exists():
-            logging.error(f"[YoloLegoDetector] No model found in {str(self.model_path)}")
-            raise RuntimeError(f"[YoloLegoDetector] No model found in {str(self.model_path)}")
-
         start_time = time.time()
         self.model = DetectionModel(self.model_path)
         elapsed_time = time.time() - start_time
 
         logging.info("Loading model took {} seconds".format(elapsed_time))
         self.__initialized = True
-
-    @staticmethod
-    def xyxy2yxyx_scaled(xyxy):
-        """
-        returns (ymin, xmin, ymax, xmax)
-        """
-        return numpy.array([[coord[1], coord[0], coord[3], coord[2]] for coord in xyxy])
-
-    @staticmethod
-    def convert_results_to_common_format(results) -> DetectionResults:
-        image_predictions = results.xyxyn[0].cpu().numpy()
-        scores = image_predictions[:, 4]
-        classes = image_predictions[:, 5].astype(numpy.int64) + 1
-        boxes = YoloLegoDetector.xyxy2yxyx_scaled(image_predictions[:, :4])
-
-        return DetectionResults(detection_scores=scores, detection_classes=classes, detection_boxes=boxes)
 
     def detect_lego(self, image: numpy.ndarray) -> DetectionResults:
         if not self.__initialized:
@@ -70,4 +53,4 @@ class YoloLegoDetector(LegoDetector, metaclass=ThreadSafeSingleton):
         elapsed_time = 1000 * (time.time() - start_time)
         logging.info(f"[YoloLegoDetector][detect_lego] Detecting bricks took {elapsed_time} milliseconds")
 
-        return self.convert_results_to_common_format(results)
+        return results
