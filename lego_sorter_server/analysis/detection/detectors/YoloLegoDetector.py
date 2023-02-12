@@ -2,13 +2,13 @@ import os
 import threading
 import time
 import logging
-import torch
 import numpy
 from pathlib import Path
 
 from lego_sorter_server.analysis.detection.DetectionResults import DetectionResults
 from lego_sorter_server.analysis.detection.detectors.LegoDetector import LegoDetector
 
+from lego_sorter_server.analysis.detection.models.TorchDetectionModel import DetectionModel
 
 class ThreadSafeSingleton(type):
     _instances = {}
@@ -37,9 +37,7 @@ class YoloLegoDetector(LegoDetector, metaclass=ThreadSafeSingleton):
             raise RuntimeError(f"[YoloLegoDetector] No model found in {str(self.model_path)}")
 
         start_time = time.time()
-        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=str(self.model_path))
-        if torch.cuda.is_available():
-            self.model.cuda()
+        self.model = DetectionModel(self.model_path)
         elapsed_time = time.time() - start_time
 
         logging.info("Loading model took {} seconds".format(elapsed_time))
@@ -68,7 +66,7 @@ class YoloLegoDetector(LegoDetector, metaclass=ThreadSafeSingleton):
 
         logging.info("[YoloLegoDetector][detect_lego] Detecting bricks...")
         start_time = time.time()
-        results = self.model([image], size=image.shape[0])
+        results = self.model(image)
         elapsed_time = 1000 * (time.time() - start_time)
         logging.info(f"[YoloLegoDetector][detect_lego] Detecting bricks took {elapsed_time} milliseconds")
 
