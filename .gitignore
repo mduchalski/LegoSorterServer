@@ -1,8 +1,6 @@
 /venv/
 /.idea/
-/lego_sorter_server/detection/test/
-/lego_sorter_server/detection/models
-/lego_sorter_server/analysis/detection/models/
+/lego_sorter_server/analysis/detection/models/yolo_model/
 /lego_sorter_server/analysis/classification/models/tf_model/
 /lego_sorter_server/analysis/classification/models/keras_model/
 

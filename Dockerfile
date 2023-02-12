@@ -1,12 +1,15 @@
+# TODO Switch to nvcr.io/nvidia/tensorrt
 FROM nvcr.io/nvidia/tensorflow:22.10.1-tf2-py3
-ADD . /LegoSorterServer/
-WORKDIR /LegoSorterServer/
 
 # OpenCV dependencies
-RUN apt install ffmpeg libsm6 libxext6 -y
+RUN apt-get install ffmpeg libsm6 libxext6 -y
 
+# Python dependencies
+ADD requirements.txt /LegoSorterServer/requirements.txt
 RUN pip install -r /LegoSorterServer/requirements.txt
 
+ADD . /LegoSorterServer/
+WORKDIR /LegoSorterServer/
 ENV PYTHONPATH="/LegoSorterServer"
 
 # This downloads YOLOv3 model and dependencies
