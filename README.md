@@ -65,7 +65,8 @@ Start the container with TensorRT disabled:
 ```
 docker run --gpus all -p 50051:50051 --rm \
 	--ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
-	lego_sorter_server python lego_sorter_server/
+	docker.io/mduchalski/lego_sorter_server \
+	python lego_sorter_server/
 ```
 
 Start the container with TensorRT enabled and a named volume mounted:
@@ -75,7 +76,8 @@ docker run --gpus all -p 50051:50051 --rm \
 	-e LEGO_CLASSIFICATION_BACKEND=tensorrt \
 	-e LEGO_DETECTION_BACKEND=tensorrt \
 	-v lego:/LegoSorterServer \
-	lego_sorter_server python lego_sorter_server/
+	docker.io/mduchalski/lego_sorter_server \
+	python lego_sorter_server/
 ```
 
 Remove an existing volume:
@@ -85,5 +87,6 @@ docker volume rm lego
 
 Rebuilding the container:
 ```
-docker build -t lego_sorter_server .
+docker build  . -t docker.io/mduchalski/lego_sorter_server
+docker push mduchalski/lego_sorter_server
 ```
