@@ -55,27 +55,47 @@ The following environement variables are exposed for configuration:
   - default - use PyTorch CUDA runtime
 - `LEGO_CLASSIFICATION_BACKEND` - specifies classification inference engine
   - `tensorrt` - use TensorRT
-  - default - use TensorFlow CUDA runtime.
+  - default - use TensorFlow CUDA runtime
+- `CONVEYOR_LOCAL_ADDRESS` - specfies motor control server address for the sorting module conveyor belt
+  - valid address - will be used for motor control (e.g., http://192.168.83.45:8000)
+  - not specfied - communication with the motor control server will be silently omitted
+- `SORTER_LOCAL_ADDRESS` - specfies motor control server address for the sorting module plow
+  - valid address - will be used for motor control (e.g., http://192.168.83.45:8001)
+  - not specfied - communication with the motor control server will be silently omitted
 
 Note that when `tensorrt` backend is enabled for any task, then on server start TensorRT engines will be built. This can take a few minutes. To make those engines persistent, mount `/LegoSorterServer` in a named volume. Such volume should generally not be migrated across different machines/HW configurations, to get the most performence on a given system.
 
 ### Command reference
 
-Start the container with TensorRT disabled:
+**Start the container with TensorRT enabled and a named volume mounted:** 
 ```
 docker run --gpus all -p 50051:50051 --rm \
 	--ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
+	-e LEGO_CLASSIFICATION_BACKEND=tensorrt \
+	-e LEGO_DETECTION_BACKEND=tensorrt \
+	-e CONVEYOR_LOCAL_ADDRESS=http://192.168.83.45:8000 \
+	-e SORTER_LOCAL_ADDRESS=http://192.168.83.45:8001 \
+	-v lego:/LegoSorterServer \
+	-v $(realpath example_config.json):/LegoSorterServer/config.json \
 	docker.io/mduchalski/lego_sorter_server \
-	python lego_sorter_server/
+	python lego_sorter_server/ -c config.json
 ```
 
-Start the container with TensorRT enabled and a named volume mounted:
+Start the container with TensorRT enabled and a named volume mounted, for local testing (no JSON/IP config):
 ```
 docker run --gpus all -p 50051:50051 --rm \
 	--ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
 	-e LEGO_CLASSIFICATION_BACKEND=tensorrt \
 	-e LEGO_DETECTION_BACKEND=tensorrt \
 	-v lego:/LegoSorterServer \
+	docker.io/mduchalski/lego_sorter_server \
+	python lego_sorter_server/
+```
+
+Start the container with TensorRT disabled, for local testing (no JSON/IP config):
+```
+docker run --gpus all -p 50051:50051 --rm \
+	--ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
 	docker.io/mduchalski/lego_sorter_server \
 	python lego_sorter_server/
 ```
