@@ -17,8 +17,23 @@ Prerequisites:
 * Working Docker installation - see [official guide](https://docs.docker.com/get-docker/)
 * NVIDIA Container Toolkit setup - see [official guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
 
-To start the application:
+Typical Ubuntu Docker setup (reference only - **highly recommended** to refer to [official guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)):
+```commandline
+curl https://get.docker.com | sh \
+  && sudo systemctl --now enable docker
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+      && curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+      && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
 ```
+
+To start the application:
+```commandline
 docker run --gpus all -p 50051:50051 --rm \
     --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -e LEGO_CLASSIFICATION_BACKEND=tensorrt \
