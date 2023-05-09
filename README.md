@@ -34,7 +34,7 @@ sudo systemctl restart docker
 
 To start the application:
 ```commandline
-docker run --gpus all -p 50051:50051 --rm \
+docker run --gpus all --network=host --rm \
     --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -e LEGO_CLASSIFICATION_BACKEND=tensorrt \
     -e LEGO_DETECTION_BACKEND=tensorrt \
@@ -80,7 +80,7 @@ Additionally, sorting configuration is specified in a JSON [configuration file](
 
 Launch using custom mounted JSON config:
 ```
-docker run --gpus all -p 50051:50051 --rm \
+docker run --gpus all --network=host --rm \
     --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -e LEGO_CLASSIFICATION_BACKEND=tensorrt \
     -e LEGO_DETECTION_BACKEND=tensorrt \
@@ -94,7 +94,7 @@ docker run --gpus all -p 50051:50051 --rm \
 
 Launch with legacy CUDA runtime:
 ```
-docker run --gpus all -p 50051:50051 --rm \
+docker run --gpus all --network=host --rm \
     --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -e CONVEYOR_LOCAL_ADDRESS=http://192.168.83.45:8000 \
     -e SORTER_LOCAL_ADDRESS=http://192.168.83.45:8001 \
@@ -105,7 +105,7 @@ docker run --gpus all -p 50051:50051 --rm \
 
 Launch for local testing w/o motor controller communication:
 ```
-docker run --gpus all -p 50051:50051 --rm \
+docker run --gpus all --network=host --rm \
     --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -e LEGO_CLASSIFICATION_BACKEND=tensorrt \
     -e LEGO_DETECTION_BACKEND=tensorrt \
