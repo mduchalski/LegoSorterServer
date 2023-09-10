@@ -16,7 +16,6 @@ import lego_sorter_server.generated.Messages_pb2 as Messages__pb2
 import lego_sorter_server.generated.LegoSorter_pb2_grpc as LegoSorter_pb2_grpc
 
 from tqdm import tqdm
-from tabulate import tabulate
 
 channel = grpc.insecure_channel('localhost:50051')
 stub = LegoSorter_pb2_grpc.LegoSorterStub(channel)
@@ -87,28 +86,6 @@ def send_images(indir, log_path):
         im_enc = im.tobytes()
         send_image(im_enc, path, log_path)
 
-def print_summary(logpath):
-    df = pd.read_csv(logpath)
-
-    # Classification statistics
-    df_c = df[df['sort_idx'] != -1]
-    df_c['err_mask'] = (df_c['label'] != df_c['label_ref'])
-    cacc = 1 - df_c['err_mask'].sum() / len(df_c)
-
-    # Brick move statistics
-    df_m = df[df['sort_idx'] == -1]
-    df_m['err_mask'] = (df_m['label'] != df_m['label_ref'])
-    macc = 1 - df_m['err_mask'].sum() / len(df_m)
-
-    table = [['Number of images sent', len(df)],
-             ['Number of classification results', len(df_c)],
-             ['Number of aggregation results', len(df_m)],
-             ['Classification error rate', f'{(1-cacc) * 100:.2f}% ({df_c["err_mask"].sum()} errors)'],
-             ['Classification accuracy', f'{cacc * 100:.2f}%'],
-             ['Aggregation error rate', f'{(1-macc) * 100:.2f}% ({df_m["err_mask"].sum()} errors)'],
-             ['Aggregation accuracy', f'{macc * 100:.2f}%']]
-
-    print(tabulate(table))
 
 def main():
     parser = argparse.ArgumentParser('Utility for sending images over gRPC, mimicking LegoSorterApp')
@@ -121,10 +98,7 @@ def main():
         writer = csv.DictWriter(logfile, fieldnames=LOG_FIELDS)
         writer.writeheader()
 
-    try:
-        send_images(args.indir[0], args.log)
-    finally:
-        print_summary(args.log)
+    send_images(args.indir[0], args.log)
 
 if __name__ == '__main__':
     main()
