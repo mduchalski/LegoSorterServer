@@ -20,8 +20,9 @@ from tabulate import tabulate
 
 channel = grpc.insecure_channel('localhost:50051')
 stub = LegoSorter_pb2_grpc.LegoSorterStub(channel)
+image_idx = 0
 
-LOG_FIELDS = ['path', 'label_ref', 'hash', 'req_time', 'sort_idx', 'ymin', 'xmin', 'ymax', 'xmax', 'label', 'score']
+LOG_FIELDS = ['image_idx', 'path', 'label_ref', 'hash', 'req_time', 'resp_time', 'sort_idx', 'ymin', 'xmin', 'ymax', 'xmax', 'label', 'score']
 
 def _process_rpc_res(rpc_res):
     if len(rpc_res.packet) > 0:
@@ -38,23 +39,29 @@ def _process_rpc_res(rpc_res):
     return {}
 
 def send_image(im_bytes, path, log_path, rot=0):
+    global image_idx
+    
     req = Messages__pb2.ImageRequest()
     req.image = im_bytes
     req.rotation = rot
 
     req_time = str(time.time())
     rpc_res = stub.processNextImage(req)
+    resp_time = str(time.time())
 
     m = hashlib.sha256()
     m.update(im_bytes)
 
     res = {
+        'image_idx': image_idx,
         'path': path,
         'label_ref': os.path.basename(path).split('_')[0],
         'req_time': req_time,
+        'resp_time': resp_time,
         'hash': m.hexdigest(),
         **_process_rpc_res(rpc_res)
     }
+    image_idx += 1
 
     with open(log_path, 'a') as logfile:
         writer = csv.DictWriter(logfile, fieldnames=LOG_FIELDS)
@@ -106,7 +113,7 @@ def print_summary(logpath):
 def main():
     parser = argparse.ArgumentParser('Utility for sending images over gRPC, mimicking LegoSorterApp')
     parser.add_argument('indir', nargs=1, help='Input directory containing folders with groups to send')
-    parser.add_argument('-l', '--log', default='log.csv', help='Output log file (default: log.csv)')
+    parser.add_argument('-l', '--log', default='logs/send.csv', help='Output log file (default: logs/send.csv)')
 
     args = parser.parse_args()
 

@@ -1,6 +1,9 @@
+import hashlib
 import logging
 import time
 import os
+
+from io import BytesIO
 
 from lego_sorter_server.generated import LegoSorter_pb2_grpc
 from lego_sorter_server.generated.LegoSorter_pb2 import SorterConfiguration, ListOfBoundingBoxesWithIndexes, \
@@ -17,20 +20,23 @@ class LegoSorterService(LegoSorter_pb2_grpc.LegoSorterServicer):
         self.sortingProcessor = SortingProcessor(brickCategoryConfig)
 
     def processNextImage(self, request: ImageRequest, context) -> ListOfBoundingBoxesWithIndexes:
-        if os.getenv('MACRO_PROFILE_EN') == '1':
-            print(f'[PROFILE][T={time.time()}] processNextImage entry')
-
         start_time = time.time()
         logging.info("[LegoSorterService] Got an image request. Processing...")
+        self.sortingProcessor.analysis_service.logger.update('processing_start_time', start_time)
+
+        m = hashlib.sha256()
+        print(type(request.image))
+        m.update(request.image)
+        self.sortingProcessor.analysis_service.logger.update('recv_hash', m.hexdigest())
+
         image = ImageProtoUtils.prepare_image(request)
         current_state = self.sortingProcessor.process_next_image(image)
 
         response = self._prepare_response_from_sorter_state(current_state=current_state)
-        elapsed_milliseconds = int(1000 * (time.time() - start_time))
+        end_time = time.time()
+        elapsed_milliseconds = int(1000 * (end_time - start_time))
+        self.sortingProcessor.analysis_service.logger.update('processing_stop_time', end_time, save_log=True)
         logging.info(f"[LegoSorterService] Processing the request took {elapsed_milliseconds} milliseconds.")
-
-        if os.getenv('MACRO_PROFILE_EN') == '1':
-            print(f'[PROFILE][T={time.time()}] processNextImage exit')
         
         return response
 

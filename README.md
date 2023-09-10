@@ -70,6 +70,8 @@ The following environment variables are exposed for configuration:
 * `CLASSIFIER_TRTEXEC_FLAGS` - flags used when building TensorRT engine for classfication model
   * Defaults to `--inputIOFormats=fp16:chw --outputIOFormats=fp16:chw --fp16` if not specified
   * Refer to [NVIDIA TensorRT Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#trtexec-ovr) for details
+* `LOG_FILENAME` - filename of CSV performance log file
+  * not specified - no log will be saved
 
 Additionally, sorting configuration is specified in a JSON [configuration file](example_config.json):
 * `bricks` - specifies plow position for desired brick classes
@@ -106,13 +108,15 @@ docker run --gpus all --network=host --rm \
     python lego_sorter_server/ -c config.json
 ```
 
-Launch for local testing w/o motor controller communication:
+Launch for local testing, with logging enabled and w/o motor controller communication:
 ```
 docker run --gpus all --network=host --rm \
     --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -e LEGO_CLASSIFICATION_BACKEND=tensorrt \
     -e LEGO_DETECTION_BACKEND=tensorrt \
+    -e LOG_FILENAME=/mnt/logs/recv.csv \
     -v lego:/LegoSorterServer \
+    -v $(realpath ./scripts/logs/):/mnt/logs \
     docker.io/mduchalski/lego_sorter_server \
     python lego_sorter_server/ -c example_config.json
 ```

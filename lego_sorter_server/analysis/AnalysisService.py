@@ -14,6 +14,7 @@ from lego_sorter_server.analysis.detection import DetectionUtils
 from lego_sorter_server.analysis.detection.DetectionResults import DetectionResults
 from lego_sorter_server.analysis.detection.detectors.LegoDetector import LegoDetector
 from lego_sorter_server.analysis.detection.detectors.LegoDetectorProvider import LegoDetectorProvider
+from lego_sorter_server.analysis.LoggerService import LoggerService
 
 
 class AnalysisService:
@@ -23,12 +24,10 @@ class AnalysisService:
     def __init__(self):
         self.detector: LegoDetector = LegoDetectorProvider.get_default_detector()
         self.classifier = LegoClassifierProvider.get_default_classifier()
+        self.logger = LoggerService()
 
     def detect(self, image: Image, resize: bool = True, threshold=0.5,
                discard_border_results: bool = True) -> DetectionResults:
-        if os.getenv('MACRO_PROFILE_EN') == '1':
-            print(f'[PROFILE][T={time.time()}] detect entry')
-
         if image.size is not AnalysisService.DEFAULT_IMAGE_DETECTION_SIZE and resize is False:
             logging.warning(f"[AnalysisService] Requested detection on an image with a non-standard size {image.size} "
                             f"but 'resize' parameter is {resize}.")
@@ -45,26 +44,23 @@ class AnalysisService:
         else:
             accepted_xy_range = [1, 1]
 
+        self.logger.update('detect_start_time', time.time())
         detection_results = self.detector.detect_lego(numpy.array(image))
+        self.logger.update('detect_end_time', time.time())
+        
         detection_results = self.filter_detection_results(detection_results, threshold, accepted_xy_range)
 
         retval = self.translate_bounding_boxes_to_original_size(detection_results,
                                                                 scale,
                                                                 original_size,
                                                                 self.DEFAULT_IMAGE_DETECTION_SIZE[0])
-        if os.getenv('MACRO_PROFILE_EN') == '1':
-            print(f'[PROFILE][T={time.time()}] detect exit')
 
         return retval
 
     def classify(self, images: List[Image]) -> ClassificationResults:
-        if os.getenv('MACRO_PROFILE_EN') == '1':
-            print(f'[PROFILE][T={time.time()}] classify entry')
-
+        self.logger.update('classify_start_time', time.time())
         retval = self.classifier.predict(images)
-
-        if os.getenv('MACRO_PROFILE_EN') == '1':
-            print(f'[PROFILE][T={time.time()}] classify exit')
+        self.logger.update('classify_end_time', time.time())
 
         return retval
 
