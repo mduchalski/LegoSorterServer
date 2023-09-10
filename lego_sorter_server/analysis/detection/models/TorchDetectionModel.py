@@ -6,7 +6,7 @@ from lego_sorter_server.analysis.detection.DetectionResults import DetectionResu
 
 class DetectionModel:
     def __init__(self, model_path):
-        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=str(model_path) + '.pt')
+        self.model = torch.hub.load('ultralytics/yolov5:v7.0', 'custom', path=str(model_path) + '.pt')
         if torch.cuda.is_available():
             self.model.cuda()
     

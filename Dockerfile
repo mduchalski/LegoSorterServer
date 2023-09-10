@@ -5,7 +5,7 @@ FROM nvcr.io/nvidia/tensorflow:22.10.1-tf2-py3
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 -y
 
 # Python dependencies
-ADD requirements.txt /LegoSorterServer/requirements.txt
+ADD requirements_docker.txt /LegoSorterServer/requirements.txt
 RUN pip install -r /LegoSorterServer/requirements.txt
 
 ADD . /LegoSorterServer/
