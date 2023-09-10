@@ -25,13 +25,14 @@ class ClassificationModel:
             onnx_model.graph.input[0].type.tensor_type.shape.dim[0].dim_value = 1
             onnx.save_model(onnx_model, str(model_path) + '.onnx')
 
+            # Retrieve TensorRT optimization flags
+            trt_flags = os.getenv('CLASSIFIER_TRTEXEC_FLAGS')
+            if trt_flags == None:
+                trt_flags = '--inputIOFormats=fp16:chw --outputIOFormats=fp16:chw --fp16'
 
             # Run TensorRT optimization
-            # TODO expose flags override/extra through envar
-            sp.check_call([ 'trtexec',
-                        f'--onnx={str(model_path) + ".onnx"}',
-                        f'--saveEngine={str(model_path) + ".engine"}',
-                        '--inputIOFormats=fp16:chw', '--outputIOFormats=fp16:chw', '--fp16'])
+            sp.check_call(['trtexec', f'--onnx={str(model_path) + ".onnx"}',
+                           f'--saveEngine={str(model_path) + ".engine"}'] + trt_flags.split())
 
         self._cuda_setup(str(model_path) + '.engine')
 

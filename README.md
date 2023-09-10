@@ -67,6 +67,9 @@ The following environment variables are exposed for configuration:
 * `SORTER_LOCAL_ADDRESS` - specifies motor control server address for the sorting module plow
   * valid address - will be used for motor control (e.g., http://192.168.83.45:8001)
   * not specified - communication with the motor control server will be silently omitted
+* `CLASSIFIER_TRTEXEC_FLAGS` - flags used when building TensorRT engine for classfication model
+  * Defaults to `--inputIOFormats=fp16:chw --outputIOFormats=fp16:chw --fp16` if not specified
+  * Refer to [NVIDIA TensorRT Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#trtexec-ovr) for details
 
 Additionally, sorting configuration is specified in a JSON [configuration file](example_config.json):
 * `bricks` - specifies plow position for desired brick classes
