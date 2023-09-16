@@ -44,15 +44,16 @@ def _process_group(grp, outdir, transforms):
     os.mkdir(grp_outdir)
 
     for img in grp:
-        im = cv2.imread(img['path'])
-        
-        for name, param in transforms:
-            im = TRANSFORM_LUT[name](im, param)
+        try:
+            im = cv2.imread(img['path'])
+            
+            for name, param in transforms:
+                im = TRANSFORM_LUT[name](im, param)
 
-        out_path = os.path.join(grp_outdir, img['file']) + '.png'
-        cv2.imwrite(out_path, im)
-
-    print(grp_outdir)
+            out_path = os.path.join(grp_outdir, img['file']) + '.png'
+            cv2.imwrite(out_path, im)
+        except:
+            print('Error loading', img['path'])
 
 def process_renders(indir, outdir, count, shuffle, transforms):
     imgs = glob.glob(os.path.join(indir, '**', '*.png'))
