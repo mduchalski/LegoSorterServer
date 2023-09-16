@@ -24,7 +24,7 @@ class AnalysisService:
     def __init__(self):
         self.detector: LegoDetector = LegoDetectorProvider.get_default_detector()
         self.classifier = LegoClassifierProvider.get_default_classifier()
-        self.logger = LoggerService()
+        self.logger = LoggerService(self.classifier)
 
     def detect(self, image: Image, resize: bool = True, threshold=0.5,
                discard_border_results: bool = True) -> DetectionResults:

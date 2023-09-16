@@ -1,6 +1,7 @@
 import os
 import onnx
 import tf2onnx
+import hashlib
 import numpy as np
 import tensorrt as trt
 import tensorflow as tf
@@ -34,7 +35,11 @@ class ClassificationModel:
             sp.check_call(['trtexec', f'--onnx={str(model_path) + ".onnx"}',
                            f'--saveEngine={str(model_path) + ".engine"}'] + trt_flags.split())
 
-        self._cuda_setup(str(model_path) + '.engine')
+        engine_path = str(model_path) + '.engine'
+        with open(engine_path, 'rb') as engine_file:
+            self.hash = hashlib.sha256(engine_file.read()).hexdigest()
+
+        self._cuda_setup(engine_path)
 
     def __call__(self, images):
         output = []

@@ -7,8 +7,8 @@ from tabulate import tabulate
 from datetime import datetime
 
 def merge_logs(send_log, recv_log):
-    df_send = pd.read_csv(send_log, index_col='image_idx')
-    df_recv = pd.read_csv(recv_log, index_col='image_idx')
+    df_send = pd.read_csv(send_log, index_col='image_idx', comment='#')
+    df_recv = pd.read_csv(recv_log, index_col='image_idx', comment='#')
     df = df_send.join(df_recv)
     return df
 
@@ -46,6 +46,9 @@ def main():
     parser.add_argument('-o', '--output', default='logs/merged.csv', help='Output file containing merged logs (default: logs/merged.csv)')
     args = parser.parse_args()
     
+    with open(args.recv) as recvfile:
+        recv_comments = [ln for ln in recvfile.readlines() if ln.startswith('#')]
+
     ctime = datetime.fromtimestamp(os.path.getctime(args.send))
     df = merge_logs(args.send, args.recv)
     df = calculate_derived(df)
@@ -54,6 +57,7 @@ def main():
 
     with open(args.output, 'w') as outfile:
         outfile.write(summary + '\n')
+        outfile.writelines(recv_comments)
         df.to_csv(outfile)
 
 if __name__ == '__main__':
