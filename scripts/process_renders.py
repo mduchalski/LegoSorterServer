@@ -17,8 +17,9 @@ from tqdm import tqdm
 from operator import itemgetter
 
 TRANSFORM_LUT = {
-    'noise': lambda im, sigma: (im + np.random.normal(0, sigma, im.shape)).astype(np.uint8),
-    'blur': lambda im, size: cv2.blur(im, (size, size))
+    'blur': lambda im, size: cv2.blur(im, (size, size)),
+    'brightness': lambda im, range: cv2.addWeighted(im, 1, im, 0, random.uniform(-range, +range)),
+    'contrast': lambda im, range: cv2.addWeighted(im, random.uniform(1 - range, 1 + range), im, 0, 0)
 }
 
 def _parse_img_path(path):
@@ -81,13 +82,14 @@ def main():
     parser.add_argument('-o', '--outdir', default=os.path.join(os.path.curdir, 'renders'), help='WILL BE CLEARED IF EXISTS! Output directory containing processed images (default: renders)')
     parser.add_argument('-c', '--count', type=int, default=100, help='Number of render groups to process (default: 100)')
     parser.add_argument('-s', '--shuffle', default=False, action='store_true', help='Shuffle groups of renders before processing')
-    parser.add_argument('-n', '--noise', type=int, default=None, help='Add normal distribution noise to each image before saving')
+    parser.add_argument('-r', '--brightness', type=float, default=None, help='Change image brightness through deviating the mean pixel value by a maximum of given amount')
     parser.add_argument('-b', '--blur', type=int, default=None, help='Add Gaussian blur to each image before saving')
+    parser.add_argument('-n', '--contrast', type=float, default=None, help='Change image contrast through multiplying pixel values by (1 +/- maximum of given amount)')
 
     args = parser.parse_args()
 
     transforms = [(name, param) for (name, param) in vars(args).items()
-                  if param != None and ['noise', 'blur'].count(name) == 1]
+                  if param != None and ['blur', 'brightness', 'contrast'].count(name) == 1]
 
     process_renders(args.indir[0], args.outdir, args.count, args.shuffle, transforms)
 
