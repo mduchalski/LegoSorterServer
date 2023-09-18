@@ -49,7 +49,7 @@ class ClassificationModel:
         output = []
         for image in images:
             self.cuda_driver_context.push()
-            cuda.memcpy_htod_async(self.d_input, image.astype(np.float16), self.stream)
+            cuda.memcpy_htod_async(self.d_input, image.astype(self.in_dtype), self.stream)
             self.context.execute_async_v2(self.bindings, self.stream.handle, None)
             cuda.memcpy_dtoh_async(self.output, self.d_output, self.stream)
             self.stream.synchronize()
@@ -67,7 +67,8 @@ class ClassificationModel:
             engine = runtime.deserialize_cuda_engine(fp.read())    
         self.context = engine.create_execution_context()
 
-        input = np.empty((1, 224, 224, 3), dtype=trt.nptype(engine.get_tensor_dtype('input_1')))
+        self.in_dtype = trt.nptype(engine.get_tensor_dtype('input_1'))
+        input = np.empty((1, 224, 224, 3), dtype=self.in_dtype)
         self.d_input = cuda.mem_alloc(1 * input.nbytes)
         self.output = np.empty((447,), dtype=trt.nptype(engine.get_tensor_dtype('pred')))
         self.d_output = cuda.mem_alloc(1 * self.output.nbytes)
