@@ -72,6 +72,8 @@ The following environment variables are exposed for configuration:
   * Refer to [NVIDIA TensorRT Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#trtexec-ovr) for details
 * `LOG_FILENAME` - filename of CSV performance log file
   * not specified - no log will be saved
+* `CLASSIFIER_LAYER_INFO_PATH` - filename of JSON file to dump classifier TensorRT engine layer info to
+  * not specified - layer info won't be exported
 
 Additionally, sorting configuration is specified in a JSON [configuration file](example_config.json):
 * `bricks` - specifies plow position for desired brick classes

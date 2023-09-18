@@ -29,7 +29,11 @@ class ClassificationModel:
             # Retrieve TensorRT optimization flags
             trt_flags = os.getenv('CLASSIFIER_TRTEXEC_FLAGS')
             if trt_flags == None:
-                trt_flags = '--inputIOFormats=fp16:chw --outputIOFormats=fp16:chw --fp16'
+                trt_flags = '' # Default to 32-bit
+            
+            layer_info_path = os.getenv('CLASSIFIER_LAYER_INFO_PATH')
+            if layer_info_path != None:
+                trt_flags += f' --profilingVerbosity=detailed --exportLayerInfo={layer_info_path}'
 
             # Run TensorRT optimization
             sp.check_call(['trtexec', f'--onnx={str(model_path) + ".onnx"}',
@@ -63,10 +67,9 @@ class ClassificationModel:
             engine = runtime.deserialize_cuda_engine(fp.read())    
         self.context = engine.create_execution_context()
 
-        # TODO parametrize sizes
-        input = np.empty((1, 224, 224, 3), dtype=np.float16)
+        input = np.empty((1, 224, 224, 3), dtype=trt.nptype(engine.get_tensor_dtype('input_1')))
         self.d_input = cuda.mem_alloc(1 * input.nbytes)
-        self.output = np.empty((447,), dtype=np.float16)
+        self.output = np.empty((447,), dtype=trt.nptype(engine.get_tensor_dtype('pred')))
         self.d_output = cuda.mem_alloc(1 * self.output.nbytes)
         self.bindings = [int(self.d_input), int(self.d_output)]
         self.stream = cuda.Stream()

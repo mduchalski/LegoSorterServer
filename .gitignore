@@ -12,4 +12,5 @@ lego_sorter_server/classifier/models/saved
 
 scripts/**/*.png
 scripts/**/*.txt
-scripts/**/*.csv
+scripts/logs/*
+scripts/*.sh
