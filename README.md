@@ -68,7 +68,6 @@ The following environment variables are exposed for configuration:
   * valid address - will be used for motor control (e.g., http://192.168.83.45:8001)
   * not specified - communication with the motor control server will be silently omitted
 * `CLASSIFIER_TRTEXEC_FLAGS` - flags used when building TensorRT engine for classfication model
-  * Defaults to `--inputIOFormats=fp16:chw --outputIOFormats=fp16:chw --fp16` if not specified
   * Refer to [NVIDIA TensorRT Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#trtexec-ovr) for details
 * `LOG_FILENAME` - filename of CSV performance log file
   * not specified - no log will be saved
