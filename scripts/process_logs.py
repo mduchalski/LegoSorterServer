@@ -7,7 +7,7 @@ from tabulate import tabulate
 from datetime import datetime
 
 def merge_logs(send_log, recv_log):
-    df_send = pd.read_csv(send_log, index_col='image_idx', comment='#')
+    df_send = pd.read_csv(send_log, index_col='image_idx', comment='#', dtype={'label': str, 'label_ref': str})
     df_recv = pd.read_csv(recv_log, index_col='image_idx', comment='#')
     df = df_send.join(df_recv)
     return df
