@@ -73,6 +73,9 @@ The following environment variables are exposed for configuration:
   * not specified - no log will be saved
 * `CLASSIFIER_LAYER_INFO_PATH` - filename of JSON file to dump classifier TensorRT engine layer info to
   * not specified - layer info won't be exported
+* `DETECTOR_TRT_DTYPE` - TensorRT datatype for detection
+  * `fp16` - use float16
+  * `fp32`, not spacified - use float32
 
 Additionally, sorting configuration is specified in a JSON [configuration file](example_config.json):
 * `bricks` - specifies plow position for desired brick classes

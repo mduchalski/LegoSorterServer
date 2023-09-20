@@ -2,13 +2,14 @@ import os
 import csv
 
 from lego_sorter_server.analysis.classification.models.TrtClassificationModel import ClassificationModel as TrtClassificationModel
+from lego_sorter_server.analysis.detection.models.TrtDetectionModel import DetectionModel as TrtDetectionModel
 
 LOG_FIELDS = ['image_idx', 'processing_start_time', 'processing_stop_time', 'classify_start_time', 'classify_end_time', 'detect_start_time', 'detect_end_time', 'recv_hash']
 PRINT_CONFIG = ['LOG_FILENAME', 'LEGO_DETECTION_BACKEND', 'LEGO_CLASSIFICATION_BACKEND', 'CLASSIFIER_TRTEXEC_FLAGS']
 
 class LoggerService:
 
-    def __init__(self, classifier):
+    def __init__(self, classifier, detector):
         self._clear_log()
 
         self.log_name = os.getenv('LOG_FILENAME')
@@ -23,6 +24,9 @@ class LoggerService:
 
             if isinstance(classifier.model, TrtClassificationModel) == True:
                 log_file.write(f'# Classifier engine hash = {classifier.model.hash}\n')
+
+            if isinstance(detector.model, TrtDetectionModel) == True:
+                log_file.write(f'# Detector engine hash = {detector.model.hash}\n')
 
             writer = csv.DictWriter(log_file, fieldnames=LOG_FIELDS)
             writer.writeheader()

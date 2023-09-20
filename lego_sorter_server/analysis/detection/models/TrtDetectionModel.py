@@ -1,3 +1,5 @@
+import os
+import hashlib
 import numpy as np
 
 from cvu.detector import Detector
@@ -11,11 +13,20 @@ class DetectionModel:
     def __init__(self, model_path):
         # Conversion from PT to ONNX is a manual step, see:
         # https://github.com/ultralytics/yolov5/blob/master/export.py
-        self.model = Detector(classes='lego', backend='tensorrt', weight=str(model_path) + '.onnx')
+
+        dtype = os.getenv('DETECTOR_TRT_DTYPE')
+        if dtype == None:
+            dtype = 'fp32'
+
+        self.model = Detector(classes='lego', backend='tensorrt', weight=str(model_path) + '.onnx', dtype=dtype)
 
         # Run inference on dummy data to build the engine
         dummy_input = np.ones((640, 640, 3), dtype=np.uint8)
         self.model(dummy_input)
+
+        engine_path = model_path.replace('onnx', 'engine')
+        with open(engine_path, 'rb') as engine_file:
+            self.hash = hashlib.sha256(engine_file.read()).hexdigest()
   
     def __call__(self, image):
         results = self.model(image)
