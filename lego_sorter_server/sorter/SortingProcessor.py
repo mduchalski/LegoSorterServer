@@ -23,10 +23,20 @@ class SortingProcessor:
             self.get_best_result = self.get_best_result_first
         elif brickCategoryConfig.best_result_method == 'max_score':
             self.get_best_result = self.get_best_result_max_score
-        elif brickCategoryConfig.best_result_method == 'mode':
-            self.get_best_result = self.get_best_result_mode
-        elif brickCategoryConfig.best_result_method == 'min_inv_score':
-            self.get_best_result = self.get_best_result_min_inv_score
+        elif brickCategoryConfig.best_result_method == 'majority_vote':
+            self.get_best_result = self.get_best_result_majority_vote
+        elif brickCategoryConfig.best_result_method == 'prod_score':
+            self.get_best_result = self.get_best_result_prod_score
+        elif brickCategoryConfig.best_result_method == 'sum_score':
+            self.get_best_result = self.get_best_result_sum_score
+        elif brickCategoryConfig.best_result_method == 'min_score':
+            self.get_best_result = self.get_best_result_min_score
+        elif brickCategoryConfig.best_result_method == 'med_score':
+            self.get_best_result = self.get_best_result_med_score
+        elif brickCategoryConfig.best_result_method == 'avg_score':
+            self.get_best_result = self.get_best_result_avg_score
+        else:
+            raise ValueError(f'Unrecognized best_result_method: {brickCategoryConfig.best_result_method}')
 
     def process_next_image(self, image: Image, save_image: bool = True):
         start_time = time.time()
@@ -110,9 +120,9 @@ class SortingProcessor:
         return max(results, key=lambda res: res[2])
 
     @staticmethod
-    def get_best_result_mode(results):
+    def get_best_result_majority_vote(results):
         label_scores = {}
-        for _, label, score in results:
+        for _, label, _ in results:
             if label in label_scores:
                 label_scores[label] += 1
             else:
@@ -122,13 +132,59 @@ class SortingProcessor:
         return next(result for result in results if result[1] == best_label)
 
     @staticmethod
-    def get_best_result_min_inv_score(results):
+    def get_best_result_prod_score(results):
         label_scores = {}
         for _, label, score in results:
             if label in label_scores:
-                label_scores[label] *= (1-score)
+                label_scores[label] *= score
             else:
-                label_scores[label] = (1-score)
+                label_scores[label] = score
 
-        best_label = min(label_scores, key=lambda l: label_scores[l])
+        best_label = max(label_scores, key=lambda l: label_scores[l])
+        return next(result for result in results if result[1] == best_label)
+
+    @staticmethod
+    def get_best_result_sum_score(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label in label_scores:
+                label_scores[label] += score
+            else:
+                label_scores[label] = score
+
+        best_label = max(label_scores, key=lambda l: label_scores[l])
+        return next(result for result in results if result[1] == best_label)
+
+    @staticmethod
+    def get_best_result_min_score(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label not in label_scores or score < label_scores[label]:
+                label_scores[label] = score
+
+        best_label = max(label_scores, key=lambda l: label_scores[l])
+        return next(result for result in results if result[1] == best_label)
+
+    @staticmethod
+    def get_best_result_med_score(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label in label_scores:
+                label_scores[label].append(score)
+            else:
+                label_scores[label] = [score]
+
+        best_label = max(label_scores, key=lambda l: sorted(label_scores[l])[len(label_scores[l])//2])
+        return next(result for result in results if result[1] == best_label)
+
+    @staticmethod
+    def get_best_result_avg_score(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label in label_scores:
+                label_scores[label].append(score)
+            else:
+                label_scores[label] = [score]
+
+        best_label = max(label_scores, key=lambda l: sum(label_scores[l]) / len(label_scores[l]))
         return next(result for result in results if result[1] == best_label)

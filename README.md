@@ -76,14 +76,19 @@ The following environment variables are exposed for configuration:
 * `DETECTOR_TRT_DTYPE` - TensorRT datatype for detection
   * `fp16` - use float16
   * `fp32`, not spacified - use float32
+* `BEST_RESULT_METHOD` - specifies multi-view classification method (result aggreagtion)
+  * `first` - use first result (fork origin default)
+  * `max_score` - use result with the highest score
+  * `majority_vote` - use most common result
+  * `prod_score` - use class with the highest product of scores
+  * `sum_score` - use class with the highest sum of scores
+  * `min_score` - use class with the highest minumum score
+  * `med_score` - use class with the highest median score
+  * `avg_score` - use class with the highest average score
 
 Additionally, sorting configuration is specified in a JSON [configuration file](example_config.json):
 * `bricks` - specifies plow position for desired brick classes
-* `best_result_method` - specifies classification result aggregation method
-  * `first` - use first result (fork origin default)
-  * `max_score` - use result with the highest score
-  * `mode` - use most common result
-  * `min_inv_score` - use class for which product of inverse scores is the lowest
+
 
 ## Command reference
 

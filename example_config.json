@@ -11,6 +11,5 @@
 		"default": {
 			"position": 0
 		}
-	},
-	"best_result_method": "min_inv_score"
+	}
 }
