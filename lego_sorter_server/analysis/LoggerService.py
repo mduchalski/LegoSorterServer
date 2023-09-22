@@ -5,7 +5,7 @@ from lego_sorter_server.analysis.classification.models.TrtClassificationModel im
 from lego_sorter_server.analysis.detection.models.TrtDetectionModel import DetectionModel as TrtDetectionModel
 
 LOG_FIELDS = ['image_idx', 'processing_start_time', 'processing_stop_time', 'classify_start_time', 'classify_end_time', 'detect_start_time', 'detect_end_time', 'recv_hash']
-PRINT_CONFIG = ['LOG_FILENAME', 'LEGO_DETECTION_BACKEND', 'LEGO_CLASSIFICATION_BACKEND', 'CLASSIFIER_TRTEXEC_FLAGS']
+PRINT_CONFIG = ['LOG_FILENAME', 'LEGO_DETECTION_BACKEND', 'LEGO_CLASSIFICATION_BACKEND', 'CLASSIFIER_TRTEXEC_FLAGS', 'BEST_RESULT_METHOD', 'DETECTOR_TRT_DTYPE']
 
 class LoggerService:
 

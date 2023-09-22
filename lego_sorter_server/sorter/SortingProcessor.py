@@ -19,24 +19,23 @@ class SortingProcessor:
         self.ordering: SimpleOrdering = SimpleOrdering()
         self.storage: LegoImageStorage = LegoImageStorage()
 
-        if brickCategoryConfig.best_result_method == 'first':
-            self.get_best_result = self.get_best_result_first
-        elif brickCategoryConfig.best_result_method == 'max_score':
-            self.get_best_result = self.get_best_result_max_score
-        elif brickCategoryConfig.best_result_method == 'majority_vote':
-            self.get_best_result = self.get_best_result_majority_vote
-        elif brickCategoryConfig.best_result_method == 'prod_score':
-            self.get_best_result = self.get_best_result_prod_score
-        elif brickCategoryConfig.best_result_method == 'sum_score':
-            self.get_best_result = self.get_best_result_sum_score
-        elif brickCategoryConfig.best_result_method == 'min_score':
-            self.get_best_result = self.get_best_result_min_score
-        elif brickCategoryConfig.best_result_method == 'med_score':
-            self.get_best_result = self.get_best_result_med_score
-        elif brickCategoryConfig.best_result_method == 'avg_score':
-            self.get_best_result = self.get_best_result_avg_score
-        else:
+        method_mapping = {
+            'first': self.get_best_result_first,
+            'max_score': self.get_best_result_max_score,
+            'majority_vote': self.get_best_result_majority_vote,
+            'prod_score': self.get_best_result_prod_score,
+            'inv_prod_score': self.get_best_result_inv_prod_score,
+            'sum_score': self.get_best_result_sum_score,
+            'min_score': self.get_best_result_min_score,
+            'med_score': self.get_best_result_med_score,
+            'avg_score': self.get_best_result_avg_score
+        }
+
+        method = method_mapping.get(brickCategoryConfig.best_result_method)
+        if method is None:
             raise ValueError(f'Unrecognized best_result_method: {brickCategoryConfig.best_result_method}')
+        
+        self.get_best_result = method
 
     def process_next_image(self, image: Image, save_image: bool = True):
         start_time = time.time()
@@ -141,6 +140,18 @@ class SortingProcessor:
                 label_scores[label] = score
 
         best_label = max(label_scores, key=lambda l: label_scores[l])
+        return next(result for result in results if result[1] == best_label)
+
+    @staticmethod
+    def get_best_result_inv_prod_score(results):
+        label_scores = {}
+        for _, label, score in results:
+            if label in label_scores:
+                label_scores[label] *= (1-score)
+            else:
+                label_scores[label] = (1-score)
+
+        best_label = min(label_scores, key=lambda l: label_scores[l])
         return next(result for result in results if result[1] == best_label)
 
     @staticmethod

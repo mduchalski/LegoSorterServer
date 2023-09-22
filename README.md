@@ -81,6 +81,7 @@ The following environment variables are exposed for configuration:
   * `max_score` - use result with the highest score
   * `majority_vote` - use most common result
   * `prod_score` - use class with the highest product of scores
+  * `inv_prod_score` - use class with the lowest product of inverted scores
   * `sum_score` - use class with the highest sum of scores
   * `min_score` - use class with the highest minumum score
   * `med_score` - use class with the highest median score
