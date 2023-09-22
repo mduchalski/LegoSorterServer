@@ -24,7 +24,7 @@ class DetectionModel:
         dummy_input = np.ones((640, 640, 3), dtype=np.uint8)
         self.model(dummy_input)
 
-        engine_path = model_path.replace('onnx', 'engine')
+        engine_path = str(model_path) + '.engine'
         with open(engine_path, 'rb') as engine_file:
             self.hash = hashlib.sha256(engine_file.read()).hexdigest()
   
